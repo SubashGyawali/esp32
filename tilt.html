@@ -52,7 +52,8 @@ function sendTilt(event){
   document.getElementById("angle").innerHTML =
     Math.round(tilt) + "°";
 
-  fetch("http://" + espIP + "/set?angle=" + Math.round(tilt), { mode: "no-cors" });
+  let img = new Image();
+  img.src = "http://" + espIP + "/set?angle=" + Math.round(tilt);
 }
 
 </script>
@@ -60,3 +61,4 @@ function sendTilt(event){
 </body>
 
 </html>
+
