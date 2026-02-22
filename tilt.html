@@ -52,10 +52,11 @@ function sendTilt(event){
   document.getElementById("angle").innerHTML =
     Math.round(tilt) + "°";
 
-  fetch("http://" + espIP + "/set?angle=" + Math.round(tilt));
+  fetch("http://" + espIP + "/set?angle=" + Math.round(tilt), { mode: "no-cors" });
 }
 
 </script>
 
 </body>
+
 </html>
