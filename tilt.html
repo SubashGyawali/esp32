@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<body style="background:#111;color:white;text-align:center;font-family:sans-serif;padding-top:40px;">
+
+<h2>Tilt Controlled Stepper</h2>
+
+<input id="ip" placeholder="Enter ESP32 IP" style="padding:10px;border-radius:6px;border:none;">
+<br><br>
+<button onclick="connect()">Connect</button>
+<button onclick="start()">Enable Tilt</button>
+
+<h3 id="status">Status: Not Connected</h3>
+<h1 id="angle">0°</h1>
+
+<script>
+
+let espIP = "";
+let connected = false;
+
+function connect(){
+  espIP = document.getElementById("ip").value;
+  connected = true;
+  document.getElementById("status").innerHTML="Connected to "+espIP;
+}
+
+function start(){
+  if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission()
+    .then(response => {
+      if (response === 'granted') {
+        window.addEventListener('deviceorientation', sendTilt);
+        document.getElementById("status").innerHTML="Tilt Enabled";
+      }
+    });
+  } else {
+    window.addEventListener('deviceorientation', sendTilt);
+  }
+}
+
+function sendTilt(event){
+
+  if (!connected) return;
+
+  let tilt = event.beta;
+
+  if (tilt < 0) tilt = 0;
+  if (tilt > 180) tilt = 180;
+
+  document.getElementById("angle").innerHTML =
+    Math.round(tilt) + "°";
+
+  fetch("http://" + espIP + "/set?angle=" + Math.round(tilt));
+}
+
+</script>
+
+</body>
+</html>
