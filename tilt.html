@@ -1,28 +1,32 @@
-
-
 <!DOCTYPE html>
 <html>
 <body style="background:#111;color:white;text-align:center;font-family:sans-serif;padding-top:40px;">
 
 <h2>Tilt Controlled Stepper</h2>
 
-<input id="ip" placeholder="Enter ESP32 IP" style="padding:10px;border-radius:6px;border:none;">
+<input id="ip" placeholder="ESP32 IP">
 <br><br>
 <button onclick="connect()">Connect</button>
 <button onclick="start()">Enable Tilt</button>
 
-<h3 id="status">Status: Not Connected</h3>
+<h3 id="status">Not Connected</h3>
 <h1 id="angle">0°</h1>
 
 <script>
 
-let espIP = "";
-let connected = false;
+let ws;
 
 function connect(){
-  espIP = document.getElementById("ip").value;
-  document.getElementById("status").innerHTML="Connected to "+espIP;
-  connected = true;
+  let ip = document.getElementById("ip").value;
+  ws = new WebSocket("ws://" + ip + ":81");
+
+  ws.onopen = function(){
+    document.getElementById("status").innerHTML="Connected";
+  };
+
+  ws.onerror = function(){
+    document.getElementById("status").innerHTML="Connection Failed";
+  };
 }
 
 function start(){
@@ -32,7 +36,6 @@ function start(){
     .then(response => {
       if (response === 'granted') {
         window.addEventListener('deviceorientation', sendTilt);
-        document.getElementById("status").innerHTML="Tilt Enabled";
       }
     });
   } else {
@@ -42,23 +45,23 @@ function start(){
 
 function sendTilt(event){
 
-  if (!connected) return;
-
   let tilt = event.beta;
+
+  if (tilt == null) return;
 
   if (tilt < 0) tilt = 0;
   if (tilt > 180) tilt = 180;
 
-  document.getElementById("angle").innerHTML =
-    Math.round(tilt) + "°";
+  let angle = Math.round(tilt);
 
-  let img = new Image();
-  img.src = "http://" + espIP + "/set?angle=" + Math.round(tilt);
+  document.getElementById("angle").innerHTML = angle + "°";
+
+  if (ws && ws.readyState === 1) {
+    ws.send(angle.toString());
+  }
 }
 
 </script>
 
 </body>
-
 </html>
-
